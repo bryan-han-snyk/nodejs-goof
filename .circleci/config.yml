@@ -7,7 +7,7 @@ orbs:
 jobs:
   build-and-test:
     docker:
-      - image: cimg/node:16.10 # Node version compatible with nodejs-goof
+      - image: cimg/*
     steps:
       - checkout
       
@@ -30,7 +30,7 @@ jobs:
 
   scan-container:
     docker:
-      - image: cimg/node:16.10
+      - image: cimg/*
     steps:
       - checkout
       - setup_remote_docker
