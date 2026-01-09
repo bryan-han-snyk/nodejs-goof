@@ -1,19 +1,52 @@
 version: 2.1
+
+# 1. Define the Snyk Orb
 orbs:
-  snyk: snyk/snyk@2.3.0
+  snyk: snyk/snyk@2.2.0 # Use the latest stable version from CircleCI Orb Registry
 
 jobs:
-  build_test:
+  build-and-test:
     docker:
-      - image: cimg/python:3.12.2
+      - image: cimg/node:16.10 # Node version compatible with nodejs-goof
     steps:
       - checkout
+      
       - run:
           name: Install Dependencies
-          command: pip install --no-cache-dir -r requirements.txt
-      - snyk/scan   # runs Snyk dependency scan
+          command: npm install
+
+      # 2. Run Snyk Open Source Scan
+      # This will fail the build if high-severity vulnerabilities are found
+      - snyk/scan:
+          fail-on-issues: true
+          severity-threshold: high
+          monitor-on-build: true # Sends a snapshot to your Snyk dashboard
+          token-variable: SNYK_TOKEN
+
+      # 3. Run Snyk Code Scan (Static Analysis)
+      - run:
+          name: Snyk Code Scan
+          command: npx snyk code test --severity-threshold=high
+
+  scan-container:
+    docker:
+      - image: cimg/node:16.10
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -t nodejs-goof:latest .
+      
+      # 4. Run Snyk Container Scan
+      - snyk/scan:
+          docker-image-name: nodejs-goof:latest
+          target-file: "Dockerfile"
+          severity-threshold: critical
+          token-variable: SNYK_TOKEN
 
 workflows:
-  build_test_deploy:
+  security-pipeline:
     jobs:
-      - build_test
+      - build-and-test
+      - scan-container
