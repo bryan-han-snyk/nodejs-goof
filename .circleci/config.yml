@@ -21,7 +21,7 @@ jobs:
           fail-on-issues: false
           severity-threshold: high
           monitor-on-build: true # Sends a snapshot to your Snyk dashboard
-          token-variable: SNYK_TOKEN
+          token-variable: SNYK_TOKEN_UI
 
       # 3. Run Snyk Code Scan (Static Analysis)
       - run:
@@ -43,7 +43,7 @@ jobs:
           docker-image-name: nodejs-goof:latest
           target-file: "Dockerfile"
           severity-threshold: critical
-          token-variable: SNYK_TOKEN
+          token-variable: SNYK_TOKEN_UI
 
 workflows:
   security-pipeline:
