@@ -2,7 +2,7 @@ version: 2.1
 
 # 1. Define the Snyk Orb
 orbs:
-  snyk: snyk/snyk@2.2.0 # Use the latest stable version from CircleCI Orb Registry
+  snyk: snyk/snyk@2.2.0 # Use the latest stable version from CircleCI Orb Registry 
 
 jobs:
   build-and-test:
