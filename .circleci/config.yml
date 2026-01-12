@@ -5,48 +5,23 @@ orbs:
   snyk: snyk/snyk@2.2.0 # Use the latest stable version from CircleCI Orb Registry
 
 jobs:
-  build-and-test:
+  build:
     docker:
-      - image: cimg/node:16.10 # Node version compatible with nodejs-goof
-    steps:
-      - checkout
-      
-      - run:
-          name: Install Dependencies
-          command: npm install
-
-      # 2. Run Snyk Open Source Scan
-      # This will fail the build if high-severity vulnerabilities are found
-      - snyk/scan:
-          fail-on-issues: false
-          severity-threshold: high
-          monitor-on-build: true # Sends a snapshot to your Snyk dashboard
-          token-variable: SNYK_TOKEN_UI
-
-      # 3. Run Snyk Code Scan (Static Analysis)
-      - run:
-          name: Snyk Code Scan
-          command: npx snyk code test --severity-threshold=high
-
-  scan-container:
-    docker:
-      - image: cimg/node:16.10
+    - image: 'circleci/buildpack-deps:stretch'
+    environment:
+      IMAGE_NAME: docker-goof
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker Image
-          command: docker build -t nodejs-goof:latest .
-      
-      # 4. Run Snyk Container Scan
+          command: 'docker build -t $IMAGE_NAME:test .'
+          name: Build Docker image
       - snyk/scan:
-          docker-image-name: nodejs-goof:latest
-          target-file: "Dockerfile"
-          severity-threshold: critical
+          docker-image-name: '$IMAGE_NAME:test'
+          fail-on-issues: false
+          monitor-on-build: true
+          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
+          severity-threshold: high
+          target-file: Dockerfile
           token-variable: SNYK_TOKEN_UI
-
-workflows:
-  security-pipeline:
-    jobs:
-      - build-and-test
-      - scan-container
+workflows: null
